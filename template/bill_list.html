@@ -1,0 +1,199 @@
+$def with(month_bills, user_f_accounts, user_t_accounts, bill_types, bill, params, err)
+$var title: 当月账单
+当月账单<br />
+<script>
+function sumOfColumns(tableID, columnIndex, hasHeader) {  
+    var tot = 0;  
+    jQuery("#" + tableID + " tr" + (hasHeader ? ":gt(0)" : ""))  
+    .children("td:nth-child(" + columnIndex + ")")  
+    .each(function() {    
+        tot += parseFloat(jQuery(this).html())*100;  
+    });  
+    if(tot >= 0) {
+        return parseInt(tot+0.5)/100;
+    } else {
+        return parseInt(tot-0.5)/100;
+    }
+}
+jQuery(document).ready(function(){
+    jQuery("#dtp_start, #dtp_end").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        autoSize: true,
+        showOn: "button",
+        buttonImage: '/static/calendar.gif',
+        buttonImageOnly: true,
+        duration: 0
+    });
+    var t = "$session['month_start']".split("-");
+    var d = new Date(t[0], t[1] - 1, t[2]);
+    dtp_start = jQuery("#dtp_start");
+    if(dtp_start.val() == ""){
+        dtp_start.datepicker("setDate", d);
+    }
+    dtp_end = jQuery("#dtp_end");
+    if(dtp_end.val() == ""){
+        var d2=new Date();
+        d2.setTime(d.getTime()+30*24*3600*1000);
+        dtp_end.datepicker("setDate", d2);
+    }
+    jQuery("#sum_amount").html(sumOfColumns("info", 8, true));
+});
+</script>
+<form method="get" action="/bill/add">
+开始日期: <input type="text" name="date_start" size="16" id="dtp_start"
+$if hasattr(params, "date_start"): value="$params['date_start']"
+/>
+结束日期: <input type="text" name="date_end" size="16" id="dtp_end"
+$if hasattr(params, "date_end"): value="$params['date_end']"
+/>
+账户类型：
+<select name="account_type">
+    <option value=""
+    $if hasattr(params, "account_type") and params['account_type'] == "": selected
+    >全部</option>
+    <option value="0"
+    $if hasattr(params, "account_type") and params['account_type'] == "0": selected
+    >纯支出</option>
+    <option value="1"
+    $if hasattr(params, "account_type") and params['account_type'] == "1": selected
+    >纯收入</option>
+</select>
+报销类型：
+<select name="claim_type">
+    <option value=""
+    $if hasattr(params, "claim_type") and params['claim_type'] == "": selected
+    >全部</option>
+    <option value="0"
+    $if hasattr(params, "claim_type") and params['claim_type'] == "0": selected
+    >不报销</option>
+    <option value="1"
+    $if hasattr(params, "claim_type") and params['claim_type'] == "1": selected
+    >已报销</option>
+    <option value="2"
+    $if hasattr(params, "claim_type") and params['claim_type'] == "2": selected
+    >待批准</option>
+    <option value="3"
+    $if hasattr(params, "claim_type") and params['claim_type'] == "3": selected
+    >预拨款</option>
+</select>
+<input type="submit" value="搜索" />
+</form>
+<table id="info">
+    <thead>
+        <th>序号</th>
+        <th>日期</th>
+        <th>消费类型</th>
+        <th>金额</th>
+        <th>付款方式</th>
+        <th>详细</th>
+        <th>报销</th>
+        <th style="visibility: hidden;"></th>
+    </thead>
+$for b in month_bills:
+    <tr>
+        <td align="center">$b.id</td>
+        <td align="center">$b.date</td>
+        <td align="center">$b.type_title</td>
+        <td align="right">$b.amount</td>
+        <td align="center">$b.a_f_title -> $b.a_t_title</td>
+        <td>$b.description</td>
+        <td align="center">
+        $if b.claim_flag == 0: 不报销
+        $elif b.claim_flag == 1: 已报销
+        $elif b.claim_flag == 2: 待批准
+        $elif b.claim_flag == 3: 预拨款
+        </td>
+        <td style="visibility: hidden;"> 
+            ${(int(not b.account_to_id) - int(not b.account_from_id)) * b.amount}
+        </td>
+    </tr>
+</table>
+总计：<span id="sum_amount">0</span>
+<form method="post" action="/bill/add">
+    <div style="padding: 3px">
+    日期: <input type="text" name="date" size="16" id="dtp"
+    $if 'date' in bill:
+        value="$bill['date']"
+    />
+    $if 'date' in err:
+        <span style="color:#FF0000">$err['date']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    消费类型: 
+    <select name="type" id="type">
+$for t in bill_types:
+    <option value="$t.id">$t.title</option>
+</select>
+    $if 'type' in err:
+        <span style="color:#FF0000">$err['type']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    支出账户: 
+    <select name="f_account" id="f_account">
+        <option value=0></option>
+$for a in user_f_accounts:
+    <option value="$a.id">$a.title</option>
+</select>
+    $if 'f_account' in err:
+        <span style="color:#FF0000">$err['f_account']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    收入账户: 
+    <select name="t_account" id="t_account">
+        <option value=0></option>
+$for a in user_t_accounts:
+    <option value="$a.id">$a.title</option>
+</select>
+    $if 't_account' in err:
+        <span style="color:#FF0000">$err['t_account']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    金额: <input type="text" name="amount" size="16"
+    $if 'amount' in bill:
+        value="$bill['amount']"
+    />
+    $if 'amount' in err:
+        <span style="color:#FF0000">$err['amount']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    详细: <input type="text" name="description" size="32"
+    $if 'description' in bill:
+        value="$bill['description']"
+    />
+    $if 'description' in err:
+        <span style="color:#FF0000">$err['description']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    报销: 
+    <select name="claim" id="claim">
+        <option value="0">不报销</option>
+        <option value="1">已报销</option>
+        <option value="2">待批准</option>
+        <option value="3">预拨款</option>
+    </select>
+    $if 'claim' in err:
+        <span style="color:#FF0000">$err['claim']</span>
+    </div>
+    
+    <div style="padding: 3px">
+    <input type="submit" value="添加" />
+    </div>
+</form>
+
+<script>
+$if 'type' in bill:
+    document.getElementById('type').value = '$bill["type"]';
+$if 'f_account' in bill:
+    document.getElementById('f_account').value = '$bill["f_account"]';
+$if 't_account' in bill:
+    document.getElementById('t_account').value = '$bill["t_account"]';
+$if 'claim' in bill:
+    document.getElementById('claim').value = '$bill["claim"]';
+</script>

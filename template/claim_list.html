@@ -1,0 +1,31 @@
+$def with(claim_list, claim, err)
+$var title: 报销列表
+报销列表<br />
+<form method="post" action="/claim/approve">
+<table id="info">
+    <thead>
+        <th>序号</th>
+        <th>日期</th>
+        <th>消费类型</th>
+        <th>金额</th>
+        <th>付款方式</th>
+        <th>详细</th>
+        <th>报销</th>
+    </thead>
+$for b in claim_list:
+    <tr>
+        <td align="center">$b.id</td>
+        <td align="center">$b.date</td>
+        <td align="center">$b.type_title</td>
+        <td align="right">$b.amount</td>
+        <td align="center">$b.a_f_title -> $b.a_t_title</td>
+        <td>$b.description</td>
+        <td align="center"><input type="checkbox" name="claim" value="$b.id" /></td>
+    </tr>
+</table>
+    <div style="padding: 3px">
+    <input type="submit" name="action" value="报销" />
+    <input type="submit" name="action" value="不报销" />
+    </div>
+</form>
+

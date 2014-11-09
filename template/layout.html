@@ -1,0 +1,91 @@
+$def with(content)
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="shortcut icon" href="/static/favicon.ico" /> 
+    <title>
+    $if hasattr(content, 'title'): $content.title
+    </title>
+    <link rel="stylesheet" type="text/css" href="/static/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="/static/jquery.dataTables.css" />
+    <style>
+    .ui-datepicker {
+        font-size: 11px;
+    }
+    
+    .ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepicker-year{
+        width:42%;
+    }
+    a img {
+        border: 0px none;
+    }
+    table {
+        border-collapse: collapse;
+    }
+    .dataTables_wrapper{
+        position : static;
+        clear: none;
+    }
+    table.display {
+        clear: right;
+    }
+    td,th {
+        white-space: nowrap;
+    }
+    </style>
+	<script language="Javascript" src="/static/jquery.min.js"></script>
+    <script language="Javascript" src="/static/jquery-ui.min.js"></script>
+    <script language="Javascript" src="/static/jquery.ui.datepicker-zh-CN.js"></script>
+    <script language="Javascript" src="/static/jquery.dataTables.min.js"></script>
+    <script>
+    jQuery(document).ready(function(){
+        var dtp = jQuery("#dtp");
+        dtp.datepicker({
+            changeMonth: true,
+            changeYear: true,
+            autoSize: true,
+            showOn: "button",
+            buttonImage: '/static/calendar.gif',
+            buttonImageOnly: true,
+            duration: 0
+        });
+        if(dtp.val() == ""){
+            dtp.datepicker("setDate" , new Date());
+        }
+        jQuery("#info").dataTable({
+            bPaginate: false,
+            bInfo: false,
+            bFilter: false,
+            sDom: 'lfirtp',
+            aaSorting: [],
+            oLanguage: {
+    			sZeroRecords: "没有找到记录",
+    			sInfo: "显示第 _START_ 到 _END_ 条记录，共计 _TOTAL_ 条",
+    			sInfoEmpty: "显示第 0 到 0 条记录，共计 0 条",
+    			sInfoFiltered: "(从 _MAX_ 条记录中过滤)",
+                sSearch: "过滤："
+    		}
+        }); 
+    });
+    </script>
+</head>
+<body>
+<img src="/static/pic/account.png"> <h3 style="display:inline">麒麟居账目管理系统</h3>
+<br>
+<br>
+$if hasattr(session, 'login'):
+    <div style="width: 110px; float: left;">
+            现在时间<br />
+            <script language="Javascript">document.write((new Date()).toLocaleTimeString())</script><br /><br />
+            <a href="/bill">记账</a><br />
+            <a href="/claim">报销</a><br />
+            <a href="/summary">统计</a><br />
+            <a href="/logout">登出</a><br />
+    </div>
+    <div style="padding-left: 20px; margin-left: 110px; border-left: 1px solid #00648C;">
+$else:
+    <div style="margin-left: 5px; float: left;">
+$:content
+</div>
+</body>
+</html>

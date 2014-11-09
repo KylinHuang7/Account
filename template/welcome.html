@@ -1,0 +1,17 @@
+$def with(logined, err)
+$var title:欢迎访问麒麟居账目管理系统
+$if logined:
+    欢迎访问麒麟居账目管理系统<br />
+    当前用户：$session.login_name<br />
+    每月结算日: $session.settle<br />
+    最近一次登录: $session.last_login<br />
+$else:
+    <form method="post" action="/login">
+        <table border="0">
+            <tr><td>用户名:</td><td><input type="text" name="username" /></td></tr>
+            <tr><td>密  码:</td><td><input type="password" name="password" /></td></tr>
+        </table>
+        <input type="submit" value="登  录" /> <br />
+    </form>
+    $if err:
+        <span style="color: #FF0000">$err</span>

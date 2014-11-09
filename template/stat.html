@@ -1,0 +1,47 @@
+$def with(month_outgo, month_income, month_budget, bill_types)
+$var title: 上月统计
+上月统计<br />
+<table>
+    <thead>
+        <th>类型</th>
+$ sum_balance = {}
+$for t in bill_types:
+        $ sum_balance[t.id] = 0
+        <th>$t.title</th>
+<th>总计</th>
+    </thead>
+    <tr>
+        <td>预算</td>
+$ sum_budget = 0
+$for b in month_budget:
+        $ sum_budget += b.budget
+        <td>$b.budget</td>
+<td>$sum_budget</td>
+    </tr>
+    <tr>
+        <td>收入</td>
+$ sum_income = 0
+$for i in month_income:
+        $ sum_income += i.money
+        $ sum_balance[i.type_id] += i.money
+        <td>$i.money</td>
+<td>$sum_income</td>
+    </tr>
+    <tr>
+        <td>支出</td>
+$ sum_outgo = 0
+$for o in month_outgo:
+        $ sum_outgo += o.money
+        $ sum_balance[o.type_id] -= o.money
+        <td>$o.money</td>
+<td>$sum_outgo</td>
+    </tr>
+    <tr>
+        <td>收支</td>
+$ sum = 0
+$for v in sum_balance.itervalues():
+        $ sum += v
+        <td>$v</td>
+<td>$sum</td>
+    </tr>
+</table>
